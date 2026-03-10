@@ -6,7 +6,7 @@ import validateCreateOrder from '../middlewares/validators/orderValidator';
 
 const router = express.Router();
 
-router.post('/order', validateCreateOrder, createOrder);
+router.post('/', validateCreateOrder, createOrder);
 
 router.use(celebrateErrors());
 

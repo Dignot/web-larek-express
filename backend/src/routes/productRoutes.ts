@@ -5,9 +5,9 @@ import { getAllProducts, createProduct } from '../controllers/productController'
 
 const router = express.Router();
 
-router.get('/product', getAllProducts);
+router.get('/', getAllProducts);
 
-router.post('/product', validateCreateProduct, createProduct);
+router.post('/', validateCreateProduct, createProduct);
 
 router.use(celebrateErrors());
 
