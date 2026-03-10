@@ -37,8 +37,8 @@ mongoose
 
 app.get('/', (_req, res) => res.send('API работает'));
 
-app.use('/api', productRoutes);
-app.use('/api', orderRoutes);
+app.use('/product', productRoutes);
+app.use('/order', orderRoutes);
 
 app.use((_req, _res, next) => next(new NotFoundError('Not Found')));
 app.use(
