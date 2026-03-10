@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { celebrate, Joi, Segments } from 'celebrate';
 
 const validateCreateProduct = celebrate({

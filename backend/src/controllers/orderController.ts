@@ -8,15 +8,15 @@ interface IOrderBody {
   phone: string;
   address: string;
   total: number;
-  items: string[]; // массив _id товаров
+  items: string[];
 }
 
-// eslint-disable-next-line @typescript-eslint/require-await
 const createOrder = async (req: Request, res: Response) => {
   try {
-    const { payment, email, phone, address, total, items } = req.body as IOrderBody;
+    const {
+      payment, email, phone, address, total, items,
+    } = req.body as IOrderBody;
 
-    // Проверка обязательных полей
     if (!payment || !['card', 'online'].includes(payment)) {
       return res.status(400).json({ message: 'Поле payment должно быть card или online' });
     }
@@ -32,21 +32,17 @@ const createOrder = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Поле total обязательно и должно быть числом' });
     }
 
-    // Получаем товары из базы
     const products = await Product.find({ _id: { $in: items } });
 
-    // Проверка всех товаров
     if (products.length !== items.length) {
       return res.status(400).json({ message: 'Некоторые товары не найдены в базе' });
     }
 
-    // Проверка, что товары продаются (price != null)
     const unavailable = products.filter((p) => p.price === null);
     if (unavailable.length > 0) {
       return res.status(400).json({ message: 'Некоторые товары недоступны для покупки' });
     }
 
-    // Проверка суммы
     const sum = products.reduce((acc, p) => acc + (p.price || 0), 0);
     if (sum !== total) {
       return res
@@ -54,10 +50,8 @@ const createOrder = async (req: Request, res: Response) => {
         .json({ message: `Сумма total (${total}) не совпадает с суммой товаров (${sum})` });
     }
 
-    // Генерируем ID заказа
     const orderId = faker.string.uuid();
 
-    // Возвращаем успешный ответ
     return res.status(201).json({
       id: orderId,
       total,

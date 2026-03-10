@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import Product, { IProduct } from '../models/product';
 
-// Получить все товары
 export const getAllProducts = async (_req: Request, res: Response) => {
   try {
     const products: IProduct[] = await Product.find({});
@@ -13,7 +12,9 @@ export const getAllProducts = async (_req: Request, res: Response) => {
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { title, description, image, category, price } = req.body;
+    const {
+      title, description, image, category, price,
+    } = req.body;
 
     if (!title || !image || !image.fileName || !image.originalName || !category) {
       return res.status(400).json({ message: 'Отсутствуют обязательные поля' });

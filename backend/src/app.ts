@@ -1,6 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import expressWinston from 'express-winston';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import winston from 'winston';
 import path from 'path';
 import express from 'express';
