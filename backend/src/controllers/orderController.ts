@@ -1,6 +1,7 @@
+import { Request, Response, NextFunction } from 'express';
 import { faker } from '@faker-js/faker';
-import { Request, Response } from 'express';
 import Product from '../models/product';
+import BadRequestError from '../errors/BadRequestError';
 
 interface IOrderBody {
   payment: 'card' | 'online';
@@ -11,43 +12,28 @@ interface IOrderBody {
   items: string[];
 }
 
-const createOrder = async (req: Request, res: Response) => {
+const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const {
-      payment, email, phone, address, total, items,
+      total, items,
     } = req.body as IOrderBody;
-
-    if (!payment || !['card', 'online'].includes(payment)) {
-      return res.status(400).json({ message: 'Поле payment должно быть card или online' });
-    }
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      return res.status(400).json({ message: 'Неверный email' });
-    }
-    if (!phone) return res.status(400).json({ message: 'Поле phone обязательно' });
-    if (!address) return res.status(400).json({ message: 'Поле address обязательно' });
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ message: 'Поле items должно быть непустым массивом' });
-    }
-    if (typeof total !== 'number') {
-      return res.status(400).json({ message: 'Поле total обязательно и должно быть числом' });
-    }
 
     const products = await Product.find({ _id: { $in: items } });
 
     if (products.length !== items.length) {
-      return res.status(400).json({ message: 'Некоторые товары не найдены в базе' });
+      return next(new BadRequestError('Некоторые товары не найдены в базе'));
     }
 
     const unavailable = products.filter((p) => p.price === null);
     if (unavailable.length > 0) {
-      return res.status(400).json({ message: 'Некоторые товары недоступны для покупки' });
+      return next(new BadRequestError('Некоторые товары недоступны для покупки'));
     }
 
     const sum = products.reduce((acc, p) => acc + (p.price || 0), 0);
     if (sum !== total) {
-      return res
-        .status(400)
-        .json({ message: `Сумма total (${total}) не совпадает с суммой товаров (${sum})` });
+      return next(
+        new BadRequestError(`Сумма total (${total}) не совпадает с суммой товаров (${sum})`),
+      );
     }
 
     const orderId = faker.string.uuid();
@@ -57,7 +43,7 @@ const createOrder = async (req: Request, res: Response) => {
       total,
     });
   } catch (err) {
-    return res.status(500).json({ message: 'Ошибка сервера при создании заказа' });
+    return next(err);
   }
 };
 
